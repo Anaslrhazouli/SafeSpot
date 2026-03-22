@@ -1,4 +1,4 @@
-import { Redirect } from "expo-router";
+import { Redirect, type Href } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
@@ -6,9 +6,7 @@ export default function Index() {
 
   if (loading) return null;
 
-  if (user) {
-    return <Redirect href="/(tabs)" />;
-  }
+  if (user) return <Redirect href="/(tabs)" />;
 
-  return <Redirect href="/(auth)/welcome" />;
+  return <Redirect href={"/(auth)/onboarding" as Href} />;
 }

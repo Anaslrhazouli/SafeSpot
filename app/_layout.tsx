@@ -16,9 +16,10 @@ function AuthGate() {
     if (loading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const inTabsGroup = segments[0] === "(tabs)";
 
-    if (!user && !inAuthGroup) {
-      router.replace("/(auth)/welcome");
+    if (!user && !inAuthGroup && inTabsGroup) {
+      router.replace("/(auth)/login" as any);
     } else if (user && inAuthGroup) {
       router.replace("/(tabs)");
     }

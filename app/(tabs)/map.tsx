@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -35,6 +35,7 @@ const DEFAULT_REGION = {
 
 export default function MapScreen() {
   const router = useRouter();
+  const TAB_BAR_HEIGHT = 98;
   const { data: spots, isLoading } = useSpotsList() as {
     data: Spot[] | undefined;
     isLoading: boolean;
@@ -43,16 +44,9 @@ export default function MapScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const mapRef = useRef<MapView>(null);
+  const hasAnimatedToUser = useRef(false);
 
   const region = useMemo(() => {
-    if (latitude && longitude) {
-      return {
-        latitude,
-        longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-    }
     const firstWithCoords = spots?.find((s) => s.latitude && s.longitude);
     if (firstWithCoords) {
       return {
@@ -63,7 +57,20 @@ export default function MapScreen() {
       };
     }
     return DEFAULT_REGION;
-  }, [latitude, longitude, spots]);
+  }, [spots]);
+
+  // Animate to user location as soon as it becomes available
+  useEffect(() => {
+    if (latitude && longitude && mapRef.current && !hasAnimatedToUser.current) {
+      hasAnimatedToUser.current = true;
+      mapRef.current.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.03,
+        longitudeDelta: 0.03,
+      }, 800);
+    }
+  }, [latitude, longitude]);
 
   const filteredSpots = useMemo(() => {
     let result = spots?.filter((s) => s.latitude && s.longitude) ?? [];
@@ -78,8 +85,16 @@ export default function MapScreen() {
           s.address?.toLowerCase().includes(q)
       );
     }
+    // Sort by nearest if user location is available
+    if (latitude && longitude) {
+      result.sort((a, b) => {
+        const distA = calculateDistance(latitude, longitude, a.latitude!, a.longitude!);
+        const distB = calculateDistance(latitude, longitude, b.latitude!, b.longitude!);
+        return distA - distB;
+      });
+    }
     return result;
-  }, [spots, selectedCategory, search]);
+  }, [spots, selectedCategory, search, latitude, longitude]);
 
   const getDistance = (spot: Spot): number | null => {
     if (!latitude || !longitude || !spot.latitude || !spot.longitude) return null;
@@ -196,7 +211,7 @@ export default function MapScreen() {
       </TouchableOpacity>
 
       {/* Bottom Sheet */}
-      <View style={[styles.bottomSheet, shadows.lg]}>
+      <View style={[styles.bottomSheet, shadows.lg, { paddingBottom: TAB_BAR_HEIGHT }]}>
         <View style={styles.sheetHandle} />
         <Text style={styles.sheetTitle}>
           {filteredSpots.length} Nearby Spot{filteredSpots.length !== 1 ? "s" : ""}
@@ -309,7 +324,7 @@ const styles = StyleSheet.create({
   myLocationBtn: {
     position: "absolute",
     right: spacing.base,
-    bottom: 220,
+    bottom: 270,
     width: 44,
     height: 44,
     borderRadius: 22,

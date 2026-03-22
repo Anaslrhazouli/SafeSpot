@@ -25,8 +25,13 @@ export function useLocation() {
   }, []);
 
   useEffect(() => {
-    checkPermission();
-  }, [checkPermission]);
+    (async () => {
+      const status = await checkPermission();
+      if (status === "granted") {
+        getCurrentPosition();
+      }
+    })();
+  }, [checkPermission, getCurrentPosition]);
 
   const getCurrentPosition = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));

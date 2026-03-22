@@ -31,7 +31,7 @@ interface SpotFormProps {
   initialData?: Spot | null;
   initialTags?: SpotTag[];
   initialPhotoUrls?: string[];
-  onSubmit: (data: CreateSpotInput) => void;
+  onSubmit: (data: CreateSpotInput, removedPhotoUrls?: string[]) => void;
   loading?: boolean;
   submitLabel?: string;
 }
@@ -50,6 +50,7 @@ export function SpotForm({
   );
   const [photoUris, setPhotoUris] = useState<string[]>(initialPhotoUrls ?? []);
   const [newPhotoUris, setNewPhotoUris] = useState<string[]>([]);
+  const [removedPhotoUrls, setRemovedPhotoUrls] = useState<string[]>([]);
   const [addressQuery, setAddressQuery] = useState(initialData?.address ?? "");
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -184,15 +185,24 @@ export function SpotForm({
   const handleRemovePhoto = (index: number) => {
     const removed = photoUris[index];
     setPhotoUris((prev) => prev.filter((_, i) => i !== index));
-    setNewPhotoUris((prev) => prev.filter((u) => u !== removed));
+    // If it's a newly added photo, remove from newPhotoUris
+    if (newPhotoUris.includes(removed)) {
+      setNewPhotoUris((prev) => prev.filter((u) => u !== removed));
+    } else {
+      // It's an existing photo from the DB — track it for deletion
+      setRemovedPhotoUrls((prev) => [...prev, removed]);
+    }
   };
 
   const onFormSubmit = (data: CreateSpotInput) => {
-    onSubmit({
-      ...data,
-      tags: selectedTags,
-      photo_uris: initialData ? newPhotoUris : photoUris,
-    });
+    onSubmit(
+      {
+        ...data,
+        tags: selectedTags,
+        photo_uris: initialData ? newPhotoUris : photoUris,
+      },
+      initialData ? removedPhotoUrls : undefined
+    );
 
     // Reset the form if this is a create (not edit)
     if (!initialData) {
@@ -212,6 +222,7 @@ export function SpotForm({
       setSelectedTags([]);
       setPhotoUris([]);
       setNewPhotoUris([]);
+      setRemovedPhotoUrls([]);
       setAddressQuery("");
       setLocationSet(false);
     }

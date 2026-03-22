@@ -138,9 +138,30 @@ export function useUpdateSpot() {
       spot: spotsRepo.UpdateSpotPayload;
       tags: string[];
       newPhotoUris: string[];
+      removedPhotoUrls?: string[];
     }) => {
       const spot = await spotsRepo.updateSpot(input.id, input.spot);
       await tagsRepo.setTagsForSpot(input.id, input.tags);
+
+      // Delete removed photos
+      if (input.removedPhotoUrls && input.removedPhotoUrls.length > 0) {
+        const allPhotos = await photosRepo.getPhotosForSpot(input.id);
+        for (const url of input.removedPhotoUrls) {
+          const photoRecord = allPhotos.find((p) => p.image_url === url);
+          if (photoRecord) {
+            await photosRepo.deletePhotoRecord(photoRecord.id);
+            // Also remove from storage if it's a Supabase URL
+            const path = extractStoragePath(url);
+            if (path) {
+              try {
+                await photoService.deletePhoto(path);
+              } catch {
+                // Storage cleanup is best-effort
+              }
+            }
+          }
+        }
+      }
 
       // Upload new photos
       if (input.newPhotoUris.length > 0 && user) {

@@ -35,7 +35,7 @@ export default function EditSpotScreen() {
     return message || "Failed to update";
   };
 
-  const handleSubmit = async (data: CreateSpotInput) => {
+  const handleSubmit = async (data: CreateSpotInput, removedPhotoUrls?: string[]) => {
     if (!id) return;
 
     try {
@@ -54,6 +54,7 @@ export default function EditSpotScreen() {
         },
         tags: data.tags,
         newPhotoUris: data.photo_uris,
+        removedPhotoUrls: removedPhotoUrls ?? [],
       });
 
       setToast({ visible: true, message: "Spot updated!" });

@@ -1,6 +1,20 @@
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/types/profile";
 
+export async function upsertProfile(
+  userId: string,
+  email: string,
+  displayName?: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("profiles")
+    .upsert(
+      { id: userId, email, display_name: displayName ?? null },
+      { onConflict: "id" }
+    );
+  if (error) throw error;
+}
+
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")

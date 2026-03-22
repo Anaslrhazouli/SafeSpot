@@ -8,12 +8,13 @@ import React, {
 import { supabase } from "@/lib/supabase";
 import type { Session, User } from "@supabase/supabase-js";
 import * as authService from "@/services/authService";
+import { upsertProfile } from "@/repositories/profileRepository";
 
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -26,14 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session on mount
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, s) => {
         setSession(s);
@@ -44,9 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignUp = useCallback(async (email: string, password: string) => {
-    await authService.signUp(email, password);
-  }, []);
+  const handleSignUp = useCallback(
+    async (email: string, password: string, displayName?: string) => {
+      const result = await authService.signUp(email, password, displayName);
+      if (result.user) {
+        await upsertProfile(result.user.id, email, displayName);
+      }
+    },
+    []
+  );
 
   const handleSignIn = useCallback(async (email: string, password: string) => {
     await authService.signIn(email, password);

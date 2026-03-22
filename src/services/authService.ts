@@ -6,8 +6,16 @@ export interface AuthResult {
   session: Session | null;
 }
 
-export async function signUp(email: string, password: string): Promise<AuthResult> {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+export async function signUp(
+  email: string,
+  password: string,
+  displayName?: string
+): Promise<AuthResult> {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: displayName ? { data: { display_name: displayName } } : undefined,
+  });
   if (error) throw error;
   return { user: data.user, session: data.session };
 }
