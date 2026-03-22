@@ -16,7 +16,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // ─── Configuration ───────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://atbhkvlzdqvukuxyljqm.supabase.co";
-const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Ymhrdmx6ZHF2dWt1eHlsanFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzIzMzE5NCwiZXhwIjoyMDg4ODA5MTk0fQ.pfix7kTC2NNDRSCQVBL5P0YlArP15mn91KYBCrsVkM0";
+const SERVICE_ROLE_KEY = "YOUR_SERVICE_ROLE_KEY_HERE"; // Supabase Dashboard > Settings > API > service_role
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },

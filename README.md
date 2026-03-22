@@ -4,6 +4,14 @@ Application mobile personnelle pour les etudiants et jeunes professionnels perme
 
 ---
 
+## Captures d'ecran
+
+| Accueil | Carte | Collection | Ajout de spot |
+|---------|-------|------------|---------------|
+| ![Accueil](screenshots/IMG_7512.PNG) | ![Carte](screenshots/IMG_7513.PNG) | ![Collection](screenshots/IMG_7514.PNG) | ![Ajout](screenshots/IMG_7515.PNG) |
+
+---
+
 ## Stack Technique
 
 | Couche | Technologie |
